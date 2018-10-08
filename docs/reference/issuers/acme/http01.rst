@@ -30,8 +30,10 @@ To define which Kubernetes service type to use during challenge response specify
 
 .. code-block:: yaml
        http01:
-         # Valid values are ClusterIP and NodePort (Kubernetes default)
+         # Valid values are ClusterIP and NodePort
          solverServiceType: ClusterIP
+
+You can also set it to an empty string to use Kubernetes' default service type.
 
 .. note::
    Let's Encrypt does not support issuing wildcard certificates with HTTP-01 challenges.

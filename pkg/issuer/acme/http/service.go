@@ -102,7 +102,6 @@ func buildService(issuer v1alpha1.GenericIssuer, crt *v1alpha1.Certificate, ch v
 			OwnerReferences: []metav1.OwnerReference{*metav1.NewControllerRef(crt, certificateGvk)},
 		},
 		Spec: corev1.ServiceSpec{
-			Type: corev1.ServiceTypeNodePort, //TODO drop this line in future to use Kubernetes' default
 			Ports: []corev1.ServicePort{
 				{
 					Name:       "http",
@@ -114,13 +113,12 @@ func buildService(issuer v1alpha1.GenericIssuer, crt *v1alpha1.Certificate, ch v
 		},
 	}
 
-	// http01 config is still optional, thus checking for presence and overriding type if necessary
-	httpConfig := issuer.GetSpec().ACME.HTTP01
-	if httpConfig != nil {
-		_solverServiceType := &httpConfig.SolverServiceType
-		if _solverServiceType != nil {
-			service.Spec.Type = *_solverServiceType
-		}
+	// http01 config is still optional, thus checking for presence and setting previous default
+	if issuer.GetSpec().ACME.HTTP01 == nil {
+		service.Spec.Type = corev1.ServiceTypeNodePort //TODO drop this line in future to use Kubernetes' default
+	} else {
+		// when issuer.GetSpec().ACME.HTTP01.SolverServiceType is an empty string, Kubernetes' default will be used
+		service.Spec.Type = issuer.GetSpec().ACME.HTTP01.SolverServiceType
 	}
 
 	return service
